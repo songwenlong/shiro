@@ -22,7 +22,8 @@ import org.apache.shiro.lang.ShiroException;
 
 /**
  * Shiro container-agnostic interface that indicates that this object requires initialization.
- *
+ * <p/>
+ * 与 Shiro 容器无关的接口，指示该对象需要初始化。
  * @since 0.2
  */
 public interface Initializable {

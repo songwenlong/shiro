@@ -84,6 +84,9 @@ public abstract class IniFactorySupport<T> extends AbstractFactory<T> {
     /**
      * Returns a new Ini instance created from the default {@code classpath:shiro.ini} file, or {@code null} if
      * the file does not exist.
+     * <p/>
+     * 返回一个从默认 classpath:shiro.ini 文件创建的新Ini实例，如果该文件不存在，则返回null
+     * <p/>
      *
      * @return a new Ini instance created from the default {@code classpath:shiro.ini} file, or {@code null} if
      *         the file does not exist.
@@ -108,6 +111,13 @@ public abstract class IniFactorySupport<T> extends AbstractFactory<T> {
      * <li>If {@link #getIni()} is {@code null} or empty, this implementation will attempt to find and load the
      * {@link #loadDefaultClassPathIni() default class path Ini}.</li>
      * <li>If neither of the two attempts above returns an instance, {@code null} is returned</li>
+     * </ol>
+     * <p/>
+     * 尝试解析用于配置的Ini实例。该实现的功能如下:
+     * <ol>
+     * <li>如果getIni()返回的Ini实例不是null或空，则将返回该实例</li>
+     * <li>如果getIni()为null或空，此实现将尝试查找并加载默认类路径Ini</li>
+     * <li>如果上述两次尝试都没有返回实例，则返回null</li>
      * </ol>
      *
      * @return the Ini instance to use for configuration.

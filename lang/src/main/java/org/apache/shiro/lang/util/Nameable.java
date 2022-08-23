@@ -22,6 +22,9 @@ package org.apache.shiro.lang.util;
 /**
  * Interface implemented by components that can be named, such as via configuration, and wish to have that name
  * set once it has been configured.
+ * <p/>
+ * 接口，由可以命名的组件实现，例如通过配置，并且希望在配置后设置该名称。
+ * <p/>
  *
  * @since 0.9
  */
@@ -29,6 +32,9 @@ public interface Nameable {
 
     /**
      * Sets the (preferably application unique) name for this component.
+     * <p/>
+     * 为该组件设置(最好是应用程序中唯一的)名称。
+     * <p/>
      * @param name the preferably application unique name for this component.
      */
     void setName(String name);

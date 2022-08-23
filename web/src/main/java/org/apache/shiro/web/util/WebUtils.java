@@ -160,6 +160,11 @@ public class WebUtils {
      * try to perform security checks for malicious input.
      * Normalize operations were was happily taken from org.apache.catalina.util.RequestUtil in
      * Tomcat trunk, r939305
+     * <p/>
+     * 规范化一个可能具有相对值的相对URI路径("/。”、“/ . ./"，等等)it it。
+     * 警告-此方法仅用于规范化应用程序生成的路径。它不会尝试对恶意输入执行安全检查。
+     * 规范化操作移用了 Tomcat分支r939305中的org.apache.catalina.util.RequestUtil。
+     * <p/>
      *
      * @param path Relative path to be normalized
      * @return normalized path
@@ -188,17 +193,21 @@ public class WebUtils {
         // Create a place for the normalized path
         String normalized = path;
 
+        // \\ 替换为 /
         if (replaceBackSlash && normalized.indexOf('\\') >= 0)
             normalized = normalized.replace('\\', '/');
 
+        // /. 替换为 /
         if (normalized.equals("/."))
             return "/";
 
         // Add a leading "/" if necessary
+        //路径最前添加 /
         if (!normalized.startsWith("/"))
             normalized = "/" + normalized;
 
         // Resolve occurrences of "//" in the normalized path
+        // // 替换为 /
         while (true) {
             int index = normalized.indexOf("//");
             if (index < 0)
@@ -208,6 +217,7 @@ public class WebUtils {
         }
 
         // Resolve occurrences of "/./" in the normalized path
+        // /./ 替换为 /
         while (true) {
             int index = normalized.indexOf("/./");
             if (index < 0)
@@ -217,12 +227,14 @@ public class WebUtils {
         }
 
         // Resolve occurrences of "/../" in the normalized path
+        // /../ 解析到上一层目录
         while (true) {
             int index = normalized.indexOf("/../");
             if (index < 0)
                 break;
             if (index == 0)
                 return (null);  // Trying to go outside our context
+            //获取上一层目录/的位置
             int index2 = normalized.lastIndexOf('/', index - 1);
             normalized = normalized.substring(0, index2) +
                     normalized.substring(index + 3);

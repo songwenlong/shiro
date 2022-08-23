@@ -75,7 +75,9 @@ public class DefaultFilterChainManager implements FilterChainManager {
 
     /**
      * Returns the {@code FilterConfig} provided by the Servlet container at webapp startup.
-     *
+     * <p/>
+     * 返回 webapp 启动时 Servlet 容器提供的 FilterConfig
+     * <p/>
      * @return the {@code FilterConfig} provided by the Servlet container at webapp startup.
      */
     public FilterConfig getFilterConfig() {
@@ -361,7 +363,9 @@ public class DefaultFilterChainManager implements FilterChainManager {
 
     /**
      * Initializes the filter by calling <code>filter.init( {@link #getFilterConfig() getFilterConfig()} );</code>.
-     *
+     * <p/>
+     * 通过调用 filter.init(getFilterConfig()) 初始化过滤器
+     * <p/>
      * @param filter the filter to initialize with the {@code FilterConfig}.
      */
     protected void initFilter(Filter filter) {

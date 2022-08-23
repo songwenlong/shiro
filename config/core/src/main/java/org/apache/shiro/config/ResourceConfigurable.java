@@ -20,6 +20,9 @@ package org.apache.shiro.config;
 
 /**
  * Interface implemented by components that can be configured by resource locations (paths).
+ * <p/>
+ * 接口，由可以通过资源位置(路径)配置的组件实现
+ * <p/>
  *
  * @since 1.2
  */
@@ -27,7 +30,8 @@ public interface ResourceConfigurable {
 
     /**
      * Convenience method that accepts a comma-delimited string of config locations (resource paths).
-     *
+     * <p/>
+     * 方便的方法，接受以逗号分隔的配置位置(资源路径)字符串
      * @param locations comma-delimited list of config locations (resource paths).
      */
     void setConfigLocations(String locations);

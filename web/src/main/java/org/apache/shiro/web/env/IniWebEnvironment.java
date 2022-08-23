@@ -79,6 +79,9 @@ public class IniWebEnvironment extends ResourceBasedWebEnvironment implements In
      * Loads configuration {@link Ini} from {@link #getConfigLocations()} if set, otherwise falling back
      * to the {@link #getDefaultConfigLocations()}. Finally any Ini objects will be merged with the value returned
      * from {@link #getFrameworkIni()}
+     * <p/>
+     * 如果设置了 configLocations，则调用 getConfigLocations() 获取 configLocations 来配置 Ini，未设置则调用 getDefaultConfigLocations()。
+     * 最后所有 Ini 对象将 与 getFrameworkIni() 返回的值合并。
      * @return Ini configuration to be used by this Environment.
      * @since 1.4
      */
@@ -107,6 +110,7 @@ public class IniWebEnvironment extends ResourceBasedWebEnvironment implements In
 
         // Allow for integrations to provide default that will be merged other configuration.
         // to retain backwards compatibility this must be a different method then 'getDefaultIni()'
+        //getFrameworkIni() 返回系统配置，ini为用户配置，将二者合并
         ini = mergeIni(getFrameworkIni(), ini);
 
         if (CollectionUtils.isEmpty(ini)) {
@@ -133,6 +137,8 @@ public class IniWebEnvironment extends ResourceBasedWebEnvironment implements In
      * Extension point to allow subclasses to provide an {@link Ini} configuration that will be merged into the
      * users configuration.  The users configuration will override anything set here.
      * <p>
+     * 扩展点，以允许子类提供Ini配置，这些配置将合并到用户配置中。用户配置将覆盖这里设置的任何相同名称的内容。
+     * <p>
      * <strong>NOTE:</strong> Framework developers should use with caution. It is possible a user could provide
      * configuration that would conflict with the frameworks configuration.  For example: if this method returns an
      * Ini object with the following configuration:
@@ -157,6 +163,34 @@ public class IniWebEnvironment extends ResourceBasedWebEnvironment implements In
      * This may cause a configuration error if <code>MyCustomRealm</code> does not contain the field <code>foobarSpecificField</code>.
      * This can be avoided if the Framework Ini uses more unique names, such as <code>foobarRealm</code>. which would result
      * in a merged configuration that looks like:
+     * <pre><code>
+     *     [main]
+     *     foobarRealm = com.myco.FoobarRealm
+     *     foobarRealm.foobarSpecificField = A string
+     *     realm = net.differentco.MyCustomRealm
+     * </code></pre>
+     * <p>
+     * <strong>注意:</strong> 框架开发人员应该谨慎使用。用户可能会提供与框架冲突的配置。例如:如果此方法返回一个Ini对象，配置如下:
+     * <pre><code>
+     *     [main]
+     *     realm = com.myco.FoobarRealm
+     *     realm.foobarSpecificField = A string
+     * </code></pre>
+     * 用户提供一个相似的配置:
+     * <pre><code>
+     *     [main]
+     *     realm = net.differentco.MyCustomRealm
+     * </code></pre>
+     *
+     * 配置将被合并为:
+     * <pre><code>
+     *     [main]
+     *     realm = net.differentco.MyCustomRealm
+     *     realm.foobarSpecificField = A string
+     * </code></pre>
+     *
+     * 如果MyCustomRealm不包含字段foobarSpecificField，就会导致配置错误。
+     * Framework Ini使用更特别的唯一的名称，比如foobarRealm，就可以避免这种情况。这样配置合并之后如下:
      * <pre><code>
      *     [main]
      *     foobarRealm = com.myco.FoobarRealm
@@ -203,6 +237,7 @@ public class IniWebEnvironment extends ResourceBasedWebEnvironment implements In
         }
 
         // at this point we have two valid ini objects, create a new one and merge the contents of 2 into 1
+        //到这里有两个有效的ini对象，创建一个新对象并将2的内容合并到1
         Ini iniResult = new Ini(ini1);
         iniResult.merge(ini2);
 
@@ -217,6 +252,7 @@ public class IniWebEnvironment extends ResourceBasedWebEnvironment implements In
         if (configLocations != null) {
             for (String location : configLocations) {
                 ini = createIni(location, false);
+                //先根据 /WEB-INF/shiro.ini 创建 Ini 对象，创建则返回，未创建继续查找 classpath:shiro.ini
                 if (!CollectionUtils.isEmpty(ini)) {
                     log.debug("Discovered non-empty INI configuration at location '{}'.  Using for configuration.",
                             location);
@@ -233,6 +269,9 @@ public class IniWebEnvironment extends ResourceBasedWebEnvironment implements In
      * is not required.
      * <p/>
      * If the path is required and does not exist or is empty, a {@link ConfigurationException} will be thrown.
+     * <p/>
+     * 创建一个反映指定路径的 Ini 实例，如果路径不存在且不是必需的，则为null。
+     * 如果路径是必需的且不存在或为空，则会抛出ConfigurationException。
      *
      * @param configLocation the resource path to load into an {@code Ini} instance.
      * @param required       if the path must exist and be converted to a non-empty {@link Ini} instance.
@@ -301,6 +340,8 @@ public class IniWebEnvironment extends ResourceBasedWebEnvironment implements In
 
     /**
      * Returns an array with two elements, {@code /WEB-INF/shiro.ini} and {@code classpath:shiro.ini}.
+     * <p/>
+     * 默认的配置路径
      *
      * @return an array with two elements, {@code /WEB-INF/shiro.ini} and {@code classpath:shiro.ini}.
      */
@@ -317,10 +358,16 @@ public class IniWebEnvironment extends ResourceBasedWebEnvironment implements In
      * If the path does not have a resource prefix as defined by {@link org.apache.shiro.lang.io.ResourceUtils#hasResourcePrefix(String)}, the
      * path is expected to be resolvable by the {@code ServletContext} via
      * {@link javax.servlet.ServletContext#getResourceAsStream(String)}.
+     * <p/>
+     * 将指定的文件路径转换为Ini实例。
+     * <p/>
+     * 如果路径没有ResourceUtils.hasResourcePrefix(String)定义的资源前缀，
+     * 该路径将被ServletContext 通过 ServletContext.getresourcestream(String)解析。
+     * <p/>
      *
-     * @param path     the path of the INI resource to load into an INI instance.
+     * @param path     the path of the INI resource to load into an INI instance. 要加载到INI实例中的INI资源的路径
      * @param required if the specified path must exist
-     * @return an INI instance populated based on the given INI resource path.
+     * @return an INI instance populated based on the given INI resource path. 基于给定INI资源路径填充的INI实例。
      */
     private Ini convertPathToIni(String path, boolean required) {
 
@@ -375,7 +422,8 @@ public class IniWebEnvironment extends ResourceBasedWebEnvironment implements In
 
     /**
      * Returns the {@code Ini} instance reflecting this WebEnvironment's configuration.
-     *
+     * <p/>
+     * 返回反映此 WebEnvironment 配置的 Ini 实例。
      * @return the {@code Ini} instance reflecting this WebEnvironment's configuration.
      */
     public Ini getIni() {
@@ -387,6 +435,11 @@ public class IniWebEnvironment extends ResourceBasedWebEnvironment implements In
      * {@link #getConfigLocations() config locations}.
      * <p/>
      * If the specified instance is null or empty, the fallback/default resource-based configuration will be used.
+     * <p/>
+     * 允许通过一个直接的Ini实例来配置，而不是通过配置配置文件路径。
+     * <p/>
+     * 如果指定的实例为null或空，将使用基于资源的配置
+     * <p/>
      *
      * @param ini the ini instance to use for creation.
      */

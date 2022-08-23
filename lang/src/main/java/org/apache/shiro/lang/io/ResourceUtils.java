@@ -80,7 +80,9 @@ public class ResourceUtils {
     /**
      * Returns {@code true} if the resource at the specified path exists, {@code false} otherwise.  This
      * method supports scheme prefixes on the path as defined in {@link #getInputStreamForPath(String)}.
-     *
+     * <p/>
+     * 如果指定路径上的资源存在，则返回true，否则返回false。这个方法支持getInputStreamForPath(String)中 定义的 路径上的 模式前缀
+     * <p/>
      * @param resourcePath the path of the resource to check.
      * @return {@code true} if the resource at the specified path exists, {@code false} otherwise.
      * @since 0.9
@@ -114,7 +116,10 @@ public class ResourceUtils {
      * {@link #URL_PREFIX URL_PREFIX}, or {@link #FILE_PREFIX FILE_PREFIX}).  If the path is not prefixed by one
      * of these schemes, the path is assumed to be a file-based path that can be loaded with a
      * {@link FileInputStream FileInputStream}.
-     *
+     * <p/>
+     * 返回由指定路径表示的资源的 InputStream，支持指示如何获取输入流的方案前缀(CLASSPATH_PREFIX、URL_PREFIX或FILE_PREFIX)，
+     * 如果路径没有使用任何一个前缀，则假定该路径是可以用 FileInputStream 加载的基于文件的路径。
+     * <p/>
      * @param resourcePath the String path representing the resource to obtain.
      * @return the InputStream for the specified resource.
      * @throws IOException if there is a problem acquiring the resource at the specified path.
@@ -122,15 +127,16 @@ public class ResourceUtils {
     public static InputStream getInputStreamForPath(String resourcePath) throws IOException {
 
         InputStream is;
+        //classpath:
         if (resourcePath.startsWith(CLASSPATH_PREFIX)) {
             is = loadFromClassPath(stripPrefix(resourcePath));
-
+        //url:
         } else if (resourcePath.startsWith(URL_PREFIX)) {
             is = loadFromUrl(stripPrefix(resourcePath));
-
+        //file:
         } else if (resourcePath.startsWith(FILE_PREFIX)) {
             is = loadFromFile(stripPrefix(resourcePath));
-
+        //默认文件路径
         } else {
             is = loadFromFile(resourcePath);
         }
@@ -160,6 +166,7 @@ public class ResourceUtils {
         return ClassUtils.getResourceAsStream(path);
     }
 
+    //去掉前缀
     private static String stripPrefix(String resourcePath) {
         return resourcePath.substring(resourcePath.indexOf(":") + 1);
     }

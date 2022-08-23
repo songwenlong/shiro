@@ -137,7 +137,17 @@ public class StringUtils {
      * <p/>
      * Therefore this method always ensures that any given string has trimmed text, and if it doesn't, <code>null</code>
      * is returned.
-     *
+     * <p/>
+     * <ol>
+     * 返回指定参数的“已清洗”表示。'Cleaned'的定义如下:
+     * <li>如果指定的字符串为null，则返回null</li>
+     * <li>如果不为空，则trim()</li>
+     * <li>如果trim后的字符串等于空字符串(即"")，返回null</li>
+     * <li>如果trim后的字符串不是空字符串，则返回trim后的版本</li>
+     * </ol>
+     * <p/>
+     * 因此，此方法总是确保任何给定字符串都有trim过的文本，如果没有则返回null。
+     * <p/>
      * @param in the input String to clean.
      * @return a populated-but-trimmed String or <code>null</code> otherwise
      */

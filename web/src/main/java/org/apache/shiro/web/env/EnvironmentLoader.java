@@ -186,9 +186,11 @@ public class EnvironmentLoader {
     private Class<? extends WebEnvironment> webEnvironmentClassFromServletContext(ServletContext servletContext) {
 
         Class<? extends WebEnvironment> webEnvironmentClass = null;
+        //ServletContext 中 ENVIRONMENT_CLASS_PARAM 的参数指定 WebEnvironment 实现类全类名
         String className = servletContext.getInitParameter(ENVIRONMENT_CLASS_PARAM);
         if (className != null) {
             try {
+                //加载实现类
                 webEnvironmentClass = ClassUtils.forName(className);
             } catch (UnknownClassException ex) {
                 throw new ConfigurationException(
@@ -202,14 +204,18 @@ public class EnvironmentLoader {
 
         WebEnvironment webEnvironment = null;
         // try to load WebEnvironment as a service
+        // 尝试将 WebEnvironment 作为服务加载
         Iterator<WebEnvironment> iterator = doLoadWebEnvironmentsFromServiceLoader();
 
         // Use the first one
+        // 取第一个
         if (iterator.hasNext()) {
             webEnvironment = iterator.next();
         }
         // if there are others, throw an error
+        // 如果 ServiceLoader 加载了多个 WebEnvironment 实现类，抛出异常
         if (iterator.hasNext()) {
+            //将所有加载的实现类类名放入 allWebEnvironments，输出日志使用
             List<String> allWebEnvironments = new ArrayList<String>();
             allWebEnvironments.add(webEnvironment.getClass().getName());
             while (iterator.hasNext()) {
@@ -230,6 +236,7 @@ public class EnvironmentLoader {
 
     /**
      * Returns the default WebEnvironment class, which is unless overridden: {@link IniWebEnvironment}.
+     * 返回默认 WebEnvironment 实现类，如果方法没有被重写默认值为 IniWebEnvironment
      * @return the default WebEnvironment class.
      */
     protected Class<? extends WebEnvironment> getDefaultWebEnvironmentClass() {
@@ -244,7 +251,14 @@ public class EnvironmentLoader {
      *     <li>A call to {@link #getDefaultWebEnvironmentClass()} (default: {@link IniWebEnvironment})</li>
      * </ul>
      *
-     * @param servletContext current servlet context
+     * 返回 WebEnvironment 的实现类，按如下顺序查找：
+     * <ul>
+     *     <li>自定义的 WebEnvironment - 用参数 {@code servletContext} {@link #ENVIRONMENT_ATTRIBUTE_KEY} 指定全类名</li>
+     *     <li>使用 {@code ServiceLoader.load(WebEnvironment.class)} 加载到的实现类 - (如果查找到多个，抛出异常 {@link ConfigurationException} </li>
+     *     <li>调用 {@link #getDefaultWebEnvironmentClass()} 方法获取 (默认实现类 {@link IniWebEnvironment})</li>
+     * </ul>
+     *
+     * @param servletContext current servlet context 当前 servlet context
      * @return the WebEnvironment implementation class to use
      * @see #ENVIRONMENT_CLASS_PARAM
      * @param servletContext the {@code servletContext} to query the {@code ENVIRONMENT_ATTRIBUTE_KEY} property from
@@ -252,21 +266,26 @@ public class EnvironmentLoader {
      */
     protected WebEnvironment determineWebEnvironment(ServletContext servletContext) {
 
+        //1) 从 ServletContext 中获取 WebEnvironment 实现类
         Class<? extends WebEnvironment> webEnvironmentClass = webEnvironmentClassFromServletContext(servletContext);
         WebEnvironment webEnvironment = null;
 
         // try service loader next
+        //2) 尝试 ServiceLoader 加载 WebEnvironment 实现类
         if (webEnvironmentClass == null) {
             webEnvironment = webEnvironmentFromServiceLoader();
         }
 
         // if webEnvironment is not set, and ENVIRONMENT_CLASS_PARAM prop was not set, use the default
+        //3) 上面两步都没有查找到 WebEnvironment 实现类，获取默认实现类
         if (webEnvironmentClass == null && webEnvironment == null) {
             webEnvironmentClass = getDefaultWebEnvironmentClass();
         }
 
         // at this point, we anything is set for the webEnvironmentClass, load it.
+        // 到这里如果为 webEnvironmentClass 设置了值
         if (webEnvironmentClass != null) {
+            //实例化
             webEnvironment = (WebEnvironment) ClassUtils.newInstance(webEnvironmentClass);
         }
 
@@ -281,7 +300,13 @@ public class EnvironmentLoader {
      * <p/>
      * This allows custom {@code WebEnvironment} implementations to be specified via a ServletContext init-param if
      * desired.  If not specified, the default {@link IniWebEnvironment} implementation will be used.
-     *
+     * <p/>
+     * 基于指定的 ServletContext 实例化一个 WebEnvironment。
+     * <p/>
+     * determineWebEnvironmentClass 方法确定了要使用的 WebEnvironment 实现类并实例化、配置、返回。
+     * <p/>
+     * 这允许在需要的时候通过 ServletContext 初始化参数来指定自定义 WebEnvironment 实现。如果没有指定，将使用默认实现IniWebEnvironment。
+     * <p/>
      * @param sc current servlet context
      * @return the constructed Shiro WebEnvironment instance
      * @see MutableWebEnvironment
@@ -290,14 +315,18 @@ public class EnvironmentLoader {
     protected WebEnvironment createEnvironment(ServletContext sc) {
 
         WebEnvironment webEnvironment = determineWebEnvironment(sc);
+        //webEnvironment 必须是可变的，才可以设置属性
         if (!MutableWebEnvironment.class.isInstance(webEnvironment)) {
             throw new ConfigurationException("Custom WebEnvironment class [" + webEnvironment.getClass().getName() +
                     "] is not of required type [" + MutableWebEnvironment.class.getName() + "]");
         }
 
+        //从 ServletContext 中获取 CONFIG_LOCATIONS_PARAM 参数的值
         String configLocations = sc.getInitParameter(CONFIG_LOCATIONS_PARAM);
+        //是否为 CONFIG_LOCATIONS_PARAM 配置了值
         boolean configSpecified = StringUtils.hasText(configLocations);
 
+        //如果为 CONFIG_LOCATIONS_PARAM 配置了值，那么 webEnvironment 必须是 ResourceConfigurable，才能设置读取参数值
         if (configSpecified && !(ResourceConfigurable.class.isInstance(webEnvironment))) {
             String msg = "WebEnvironment class [" + webEnvironment.getClass().getName() + "] does not implement the " +
                     ResourceConfigurable.class.getName() + "interface.  This is required to accept any " +
@@ -305,16 +334,19 @@ public class EnvironmentLoader {
             throw new ConfigurationException(msg);
         }
 
+        //为 WebEnvironment 设置 ServletContext
         MutableWebEnvironment environment = (MutableWebEnvironment) webEnvironment;
 
         environment.setServletContext(sc);
 
+        //为 WebEnvironment 设置 locations
         if (configSpecified && (environment instanceof ResourceConfigurable)) {
             ((ResourceConfigurable) environment).setConfigLocations(configLocations);
         }
 
         customizeEnvironment(environment);
 
+        //初始化
         LifecycleUtils.init(environment);
 
         return environment;
@@ -323,6 +355,8 @@ public class EnvironmentLoader {
     /**
      * Any additional customization of the Environment can be by overriding this method. For example setup shared
      * resources, etc. By default this method does nothing.
+     * <p/>
+     * 任何对 Environment 的额外定制都可以通过重写这个方法来完成。例如，设置共享资源等。默认情况下，此方法不做任何操作
      * @param environment
      */
     protected void customizeEnvironment(WebEnvironment environment) {

@@ -24,9 +24,11 @@ import org.apache.shiro.lang.util.StringUtils;
  * <p>PathMatcher implementation for Ant-style path patterns.
  * Examples are provided below.</p>
  *
+ * 用于 Ant-style 路径模式的 PathMatcher 实现。下面提供了一些示例
+ *
  * <p>Part of this mapping code has been kindly borrowed from
  * <a href="http://ant.apache.org">Apache Ant</a>.
- *
+ * 映射代码的一部分地借鉴了 Apache Ant。
  * <p>The mapping matches URLs using the following rules:<br>
  * <ul>
  * <li>? matches one character</li>
@@ -74,6 +76,8 @@ public class AntPathMatcher implements PatternMatcher {
     /**
      * Set the path separator to use for pattern parsing.
      * Default is "/", as in Ant.
+     * <p/>
+     * 设置用于模式解析的路径分隔符。默认是“/”，就像Ant中一样。
      */
     public void setPathSeparator(String pathSeparator) {
         this.pathSeparator = (pathSeparator != null ? pathSeparator : DEFAULT_PATH_SEPARATOR);

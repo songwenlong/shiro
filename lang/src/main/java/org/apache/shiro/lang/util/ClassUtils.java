@@ -70,6 +70,7 @@ public class ClassUtils {
     private static final ClassLoaderAccessor THREAD_CL_ACCESSOR = new ExceptionIgnoringAccessor() {
         @Override
         protected ClassLoader doGetClassLoader() throws Throwable {
+            //当前线程的类加载器
             return Thread.currentThread().getContextClassLoader();
         }
     };
@@ -80,6 +81,7 @@ public class ClassUtils {
     private static final ClassLoaderAccessor CLASS_CL_ACCESSOR = new ExceptionIgnoringAccessor() {
         @Override
         protected ClassLoader doGetClassLoader() throws Throwable {
+            //当前类的类加载器
             return ClassUtils.class.getClassLoader();
         }
     };
@@ -90,6 +92,7 @@ public class ClassUtils {
     private static final ClassLoaderAccessor SYSTEM_CL_ACCESSOR = new ExceptionIgnoringAccessor() {
         @Override
         protected ClassLoader doGetClassLoader() throws Throwable {
+            //系统类加载器
             return ClassLoader.getSystemClassLoader();
         }
     };
@@ -100,10 +103,13 @@ public class ClassUtils {
      * current ClassLoader (<code>ClassUtils.class.getClassLoader()</code>), then the system/application
      * ClassLoader (<code>ClassLoader.getSystemClassLoader()</code>, in that order, using
      * {@link ClassLoader#getResourceAsStream(String) getResourceAsStream(name)}.
-     *
-     * @param name the name of the resource to acquire from the classloader(s).
+     * <p/>
+     * 使用类加载器返回指定的资源，选择类加载器的顺序：
+     *     当前线程的上下文类加载 -> 当前类的类加载器 -> 系统/应用的类加载器
+     * <p/>
+     * @param name the name of the resource to acquire from the classloader(s). 要从类加载器获取的资源的名称
      * @return the InputStream of the resource found, or <code>null</code> if the resource cannot be found from any
-     *         of the three mentioned ClassLoaders.
+     *         of the three mentioned ClassLoaders. 找到的资源的 InputStream，如果使用上述的三个类加载器都没有找到资源，则为空。
      * @since 0.9
      */
     public static InputStream getResourceAsStream(String name) {
@@ -263,7 +269,9 @@ public class ClassUtils {
      * @since 1.0
      */
     private static interface ClassLoaderAccessor {
+        //加载类
         Class loadClass(String fqcn);
+        //获取输入流
         InputStream getResourceStream(String name);
     }
 
@@ -290,13 +298,16 @@ public class ClassUtils {
 
         public InputStream getResourceStream(String name) {
             InputStream is = null;
+            //先获取类加载器
             ClassLoader cl = getClassLoader();
+            //再用类加载器获取输入流
             if (cl != null) {
                 is = cl.getResourceAsStream(name);
             }
             return is;
         }
 
+        //获取类加载器，是final方法，不允许覆写，通过覆写内部调用的doGetClassLoader()方法来改变行为
         protected final ClassLoader getClassLoader() {
             try {
                 return doGetClassLoader();

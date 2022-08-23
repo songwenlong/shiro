@@ -48,8 +48,8 @@ public class Ini implements Map<String, Ini.Section> {
 
     private static transient final Logger log = LoggerFactory.getLogger(Ini.class);
 
-    public static final String DEFAULT_SECTION_NAME = ""; //empty string means the first unnamed section
-    public static final String DEFAULT_CHARSET_NAME = "UTF-8";
+    public static final String DEFAULT_SECTION_NAME = ""; //empty string means the first unnamed section 空字符串表示第一个未命名的部分
+    public static final String DEFAULT_CHARSET_NAME = "UTF-8"; //默认字符集
 
     public static final String COMMENT_POUND = "#";
     public static final String COMMENT_SEMICOLON = ";";
@@ -69,6 +69,9 @@ public class Ini implements Map<String, Ini.Section> {
 
     /**
      * Creates a new {@code Ini} instance with the specified defaults.
+     * <p/>
+     * 使用指定的默认值创建一个新的Ini实例。
+     * <p/>
      *
      * @param defaults the default sections and/or key-value pairs to copy into the new instance.
      */
@@ -126,7 +129,9 @@ public class Ini implements Map<String, Ini.Section> {
 
     /**
      * Returns the {@link Section} with the given name or {@code null} if no section with that name exists.
-     *
+     * <p/>
+     * 返回具有给定名称的section，如果不存在同名的section则返回null
+     * <p/>
      * @param sectionName the name of the section to retrieve.
      * @return the {@link Section} with the given name or {@code null} if no section with that name exists.
      */
@@ -137,7 +142,9 @@ public class Ini implements Map<String, Ini.Section> {
 
     /**
      * Ensures a section with the specified name exists, adding a new one if it does not yet exist.
-     *
+     * <p/>
+     * 确保具有指定名称的section存在，如果还不存在，则添加一个新的section
+     * <p/>
      * @param sectionName the name of the section to ensure existence
      * @return the section created if it did not yet exist, or the existing Section that already existed.
      */
@@ -164,6 +171,7 @@ public class Ini implements Map<String, Ini.Section> {
 
     private static String cleanName(String sectionName) {
         String name = StringUtils.clean(sectionName);
+        //name为空，取默认值""
         if (name == null) {
             log.trace("Specified name was null or empty.  Defaulting to the default section (name = \"\")");
             name = DEFAULT_SECTION_NAME;
@@ -238,6 +246,9 @@ public class Ini implements Map<String, Ini.Section> {
      * Loads data from the specified resource path into this current {@code Ini} instance.  The
      * resource path may be any value interpretable by the
      * {@link ResourceUtils#getInputStreamForPath(String) ResourceUtils.getInputStreamForPath} method.
+     * <p/>
+     * 从指定的资源路径加载数据到当前的Ini实例中。资源路径可以是ResourceUtils.getInputStreamForPath方法可解释的任何值。
+     * <p/>
      *
      * @param resourcePath the resource location of the INI data to load into this instance.
      * @throws ConfigurationException if the path cannot be loaded
@@ -266,7 +277,11 @@ public class Ini implements Map<String, Ini.Section> {
      * Loads the INI-formatted text backed by the given InputStream into this instance.  This implementation will
      * close the input stream after it has finished loading.  It is expected that the stream's contents are
      * UTF-8 encoded.
-     *
+     * <p/>
+     * 将指定的 InputStream 支持的 ini 格式的文本加载到这个实例中。
+     * 这个实现将在完成加载后关闭输入流。
+     * 流的内容应该是UTF-8编码的。
+     * <p/>
      * @param is the {@code InputStream} from which to read the INI-formatted text
      * @throws ConfigurationException if unable
      */
@@ -286,7 +301,10 @@ public class Ini implements Map<String, Ini.Section> {
     /**
      * Loads the INI-formatted text backed by the given Reader into this instance.  This implementation will close the
      * reader after it has finished loading.
-     *
+     * <p/>
+     * 将指定 Reader 支持的 ini 格式的文本加载到这个实例中。
+     * 这个实现将在完成加载后关闭读取器。
+     * <p/>
      * @param reader the {@code Reader} from which to read the INI-formatted text
      */
     public void load(Reader reader) {
@@ -306,6 +324,9 @@ public class Ini implements Map<String, Ini.Section> {
      * Merges the contents of <code>m</code>'s {@link Section} objects into self.
      * This differs from {@link Ini#putAll(Map)}, in that each section is merged with the existing one.
      * For example the following two ini blocks are merged and the result is the third<BR/>
+     * <p>
+     * 合并m的 Ini.Section 对象的内容到当前 Ini 对象中。
+     * 这与 Ini#putAll(Map)（存在同名则替换） 不同，因为每个section都与现存的section合并。例如，下面两个ini块被合并，结果是第三个。
      * <p>
      * Initial:
      * <pre>
@@ -369,7 +390,17 @@ public class Ini implements Map<String, Ini.Section> {
     /**
      * Loads the INI-formatted text backed by the given Scanner.  This implementation will close the
      * scanner after it has finished loading.
+     * <p/>
+     * 加载由给定扫描器支持的 ini 格式的文本。
+     * 这个实现将在加载完成后关闭扫描器。
+     * <p/>
+     * 配置如下：
+     * [users]
+     * root = secret, admin
+     * guest = guest, guest
      *
+     * header 指 [users]
+     * <p/>
      * @param scanner the {@code Scanner} from which to read the INI-formatted text
      */
     public void load(Scanner scanner) {
@@ -377,22 +408,28 @@ public class Ini implements Map<String, Ini.Section> {
         String sectionName = DEFAULT_SECTION_NAME;
         StringBuilder sectionContent = new StringBuilder();
 
+        //遍历行，如果不是 header，就将行内容放入缓冲 sectionContent 中；
+        //如果是 header，说明是一个新的 section，将上个 section 内容转换为 section 对象，将新 section 内容放入缓冲 sectionContent 中
         while (scanner.hasNextLine()) {
 
             String rawLine = scanner.nextLine();
             String line = StringUtils.clean(rawLine);
 
+            //行经过清洗后 为nul 或 以#或; 开始 就跳过
             if (line == null || line.startsWith(COMMENT_POUND) || line.startsWith(COMMENT_SEMICOLON)) {
-                //skip empty lines and comments:
+                //skip empty lines and comments: -> 说明注释以 # 或 ; 开始
                 continue;
             }
 
             String newSectionName = getSectionName(line);
+            //newSectionName 不为null，一定是header
             if (newSectionName != null) {
                 //found a new section - convert the currently buffered one into a Section object
+                //找到新的section -将当前缓冲的 section 转换为 section对象
                 addSection(sectionName, sectionContent);
 
                 //reset the buffer for the new section:
+                //为新的section 重置缓冲区
                 sectionContent = new StringBuilder();
 
                 sectionName = newSectionName;
@@ -402,22 +439,35 @@ public class Ini implements Map<String, Ini.Section> {
                 }
             } else {
                 //normal line - add it to the existing content buffer:
+                //正常行，不是header - 追加到已经存在内容缓冲区
                 sectionContent.append(rawLine).append("\n");
             }
         }
 
         //finish any remaining buffered content:
+        //处理最后一个 section 的内容
         addSection(sectionName, sectionContent);
     }
 
+    /**
+     * 配置如下：
+     * [users]
+     * root = secret, admin
+     * guest = guest, guest
+     *
+     * header 指 [users]
+     */
     protected static boolean isSectionHeader(String line) {
         String s = StringUtils.clean(line);
+        //以[开头，以]结尾
         return s != null && s.startsWith(SECTION_PREFIX) && s.endsWith(SECTION_SUFFIX);
     }
 
+    //是header，返回""或非空字符串；不是header，返回null
     protected static String getSectionName(String line) {
         String s = StringUtils.clean(line);
         if (isSectionHeader(s)) {
+            //先去掉[和]
             return cleanName(s.substring(1, s.length() - 1));
         }
         return null;
@@ -500,6 +550,9 @@ public class Ini implements Map<String, Ini.Section> {
     /**
      * An {@code Ini.Section} is String-key-to-String-value Map, identifiable by a
      * {@link #getName() name} unique within an {@link Ini} instance.
+     * <p/>
+     * Section是一个Map<String,String>，可以通过 Ini 实例中唯一的名称识别。
+     * props 属性是一个 LinkedHashMap
      */
     public static class Section implements Map<String, String> {
         private final String name;

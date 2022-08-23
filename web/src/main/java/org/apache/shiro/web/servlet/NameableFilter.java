@@ -27,7 +27,10 @@ import javax.servlet.FilterConfig;
  * {@link #getName()}/{@link #setName(String)} methods.  If no name is specified, the name of the filter will
  * default to the name given to it in {@code web.xml} (the {@code FilterConfig}'s
  * {@link javax.servlet.FilterConfig#getFilterName() filterName}).
- *
+ * <p/>
+ * 允许过滤器通过与JavaBeans兼容的 getName()/setName(String) 方法命名。
+ * 如果没有指定名称，过滤器的名称将默认为web.xml中给出的名称(FilterConfig的filterName)。
+ * <p/>
  * @since 1.0
  */
 public abstract class NameableFilter extends AbstractFilter implements Nameable {
@@ -44,7 +47,9 @@ public abstract class NameableFilter extends AbstractFilter implements Nameable 
      * filter name as specified by the servlet container at start-up:
      * <pre>
      * this.name = {@link #getFilterConfig() getFilterConfig()}.{@link javax.servlet.FilterConfig#getFilterName() getName()};</pre>
-     *
+     * <p/>
+     * 除非调用setName(String)方法来重写，否则该值默认为servlet容器在启动时指定的过滤器名称
+     * <p/>
      * @return the filter name, or {@code null} if none available
      * @see javax.servlet.GenericServlet#getServletName()
      * @see javax.servlet.FilterConfig#getFilterName()
@@ -77,7 +82,9 @@ public abstract class NameableFilter extends AbstractFilter implements Nameable 
     /**
      * Returns a StringBuilder instance with the {@link #getName() name}, or if the name is {@code null}, just the
      * {@code super.toStringBuilder()} instance.
-     *
+     * <p/>
+     * 返回一个带名称的StringBuilder实例，如果名称为空，则只返回super.toStringBuilder()实例。
+     * <p/>
      * @return a StringBuilder instance to use for appending String data that will eventually be returned from a
      *         {@code toString()} invocation.
      */
