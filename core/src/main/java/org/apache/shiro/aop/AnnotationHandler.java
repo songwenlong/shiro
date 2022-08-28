@@ -26,13 +26,14 @@ import org.apache.shiro.subject.Subject;
 
 /**
  * Base support class for implementations that reads and processes JSR-175 annotations.
- *
+ * 基本支持类，用于读取和处理JSR-175注解的 实现
  * @since 0.9.0
  */
 public abstract class AnnotationHandler {
 
     /**
      * The type of annotation this handler will process.
+     * 此 handler 将处理的注解类型
      */
     protected Class<? extends Annotation> annotationClass;
 
@@ -74,7 +75,9 @@ public abstract class AnnotationHandler {
 
     /**
      * Returns the type of annotation this handler inspects and processes.
-     *
+     * <p/>
+     * 返回此处理程序检查和处理的注释类型
+     * <p/>
      * @return the type of annotation this handler inspects and processes.
      */
     public Class<? extends Annotation> getAnnotationClass() {

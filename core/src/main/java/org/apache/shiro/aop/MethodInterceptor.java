@@ -23,6 +23,11 @@ package org.apache.shiro.aop;
  *
  * <p>Shiro's implementations of this interface mostly have to deal with ensuring a current Subject has the
  * ability to execute the method before allowing it to continue.
+ * <p/>
+ * MethodInterceptor拦截一个MethodInvocation，以便在逻辑之前或之后执行(又名'advice')。
+ * <p/>
+ * Shiro对该接口的实现主要是 确保当前Subject 在允许方法继续之前 有能力执行该方法
+ * <p/>
  *
  * @since 0.2
  */
@@ -31,6 +36,9 @@ public interface MethodInterceptor {
     /**
      * Invokes the specified <code>MethodInvocation</code>, allowing implementations to perform pre/post/finally
      * surrounding the actual invocation.
+     * <p/>
+     * 调用指定的MethodInvocation，允许实现 围绕实际调用 执行 pre/post/finally。
+     * <p/>
      *
      * @param methodInvocation the <code>MethodInvocation</code> to execute.
      * @return the result of the invocation
